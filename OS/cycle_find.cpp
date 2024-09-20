@@ -2,9 +2,9 @@
 #include <iostream>
 
 
-std::vector<std::vector<int>> matrix { {0,1,1},
-                                       {0,0,1},
-                                       {0,0,0}};
+std::vector<std::vector<int>> matrix {{0,1,1},
+                                      {0,0,1},
+                                      {0,0,0}};
 
 std::vector<int> visited(3);
 
