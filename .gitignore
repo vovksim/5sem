@@ -1,2 +1,5 @@
 #Moss simulator files
 moss
+
+#Compiled files
+*.out
