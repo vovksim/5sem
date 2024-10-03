@@ -3,3 +3,6 @@ moss
 
 #Compiled files
 *.out
+
+#MSS lab1 value list
+MSS/lab1_data
