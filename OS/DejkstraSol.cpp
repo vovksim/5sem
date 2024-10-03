@@ -1,8 +1,6 @@
 #include <chrono>
 #include <iostream>
-#include <memory>
 #include <mutex>
-#include <ostream>
 #include <random>
 #include <semaphore>
 #include <thread>
@@ -57,9 +55,6 @@ void test(size_t i)
         state[right(i)] != State::EATING) 
     {
         state[i] = State::EATING;
-        std::lock_guard<std::mutex> lk(output_mtx);
-        std::cout << "Thread: " << std::this_thread::get_id() << '\t';
-        std::cout << "Testing phil: " << i << std::endl;
         both_forks_available[i].release(); // forks are no longer needed for this eat session
     }
 }
@@ -100,7 +95,6 @@ void eat(size_t i)
 
 void put_forks(size_t i) 
 { 
-    
     std::lock_guard<std::mutex> lk{critical_region_mtx};    // enter critical region
     state[i] = State::THINKING;  // philosopher has finished State::EATING
     test(left(i));               // see if left neighbor can now eat
@@ -109,8 +103,7 @@ void put_forks(size_t i)
 }
 
 void philosopher(size_t i)
-{  
-    std::cout << "Philosopher " << i << " started on thread: " << std::this_thread::get_id() << std::endl;
+{
     while (true) 
     {                         // repeat forever
         think(i);             // philosopher is State::THINKING
@@ -121,12 +114,9 @@ void philosopher(size_t i)
 }
 
 int main() {
-    std::cout << "dp_14\n";
-
     std::jthread t0([&] { philosopher(0); }); // [&] means every variable outside the ensuing lambda 
     std::jthread t1([&] { philosopher(1); }); // is captured by reference
     std::jthread t2([&] { philosopher(2); });
     std::jthread t3([&] { philosopher(3); });
     std::jthread t4([&] { philosopher(4); });
 }
-
