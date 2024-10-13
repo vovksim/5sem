@@ -5,6 +5,8 @@
 #include <semaphore>
 #include <thread>
 
+std::vector<int> eatCounter(5);
+
 constexpr const size_t N = 5;  // number of philosophers (and forks)
 enum class State 
 {
@@ -47,23 +49,26 @@ size_t my_rand(size_t min, size_t max)
 }
 
 void test(size_t i) 
-// if philosopher i is hungry and both neighbors are not eating then eat
-{ 
-    // i: philosopher number, from 0 to N-1
+{
     if (state[i] == State::HUNGRY &&
         state[left(i)] != State::EATING &&
         state[right(i)] != State::EATING) 
     {
         state[i] = State::EATING;
-        both_forks_available[i].release(); // forks are no longer needed for this eat session
+        both_forks_available[i].release();
     }
 }
 
 void think(size_t i) 
 {
     size_t duration = my_rand(400, 800);
+    if(i==2 or i==0) {
+      duration = my_rand(50,100);
+    } else if(i==4) {
+      duration = my_rand(800,1000);
+    }
     {
-        std::lock_guard<std::mutex> lk(output_mtx); // critical section for uninterrupted print
+        std::lock_guard<std::mutex> lk(output_mtx);
         std::cout << i << " is thinking " << duration << "ms\n";
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(duration));
@@ -72,22 +77,25 @@ void think(size_t i)
 void take_forks(size_t i)
 {
     {
-        std::lock_guard<std::mutex> lk{critical_region_mtx};  // enter critical region
-        state[i] = State::HUNGRY;  // record fact that philosopher i is State::HUNGRY
+        std::lock_guard<std::mutex> lk{critical_region_mtx};
+        state[i] = State::HUNGRY;
         {
-            std::lock_guard<std::mutex> lk(output_mtx); // critical section for uninterrupted print
+            std::lock_guard<std::mutex> lk(output_mtx);
             std::cout << "\t\t" << i << " is State::HUNGRY\n";
         }
-        test(i);                        // try to acquire (a permit for) 2 forks
-    }                                   // exit critical region
-    both_forks_available[i].acquire();  // block if forks were not acquired
+        test(i);
+    }
+    both_forks_available[i].acquire();
 }
 
 void eat(size_t i)
 {
     size_t duration = my_rand(400, 800);
+    if(i==0 or i==2) {
+      duration=my_rand(100,200);
+    }
     {
-        std::lock_guard<std::mutex> lk(output_mtx); // critical section for uninterrupted print
+        std::lock_guard<std::mutex> lk(output_mtx);
         std::cout << "\t\t\t\t" << i << " is eating " << duration << "ms\n";
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(duration));
@@ -95,21 +103,28 @@ void eat(size_t i)
 
 void put_forks(size_t i) 
 { 
-    std::lock_guard<std::mutex> lk{critical_region_mtx};    // enter critical region
-    state[i] = State::THINKING;  // philosopher has finished State::EATING
-    test(left(i));               // see if left neighbor can now eat
-    test(right(i));              // see if right neighbor can now eat
-                                 // exit critical region by exiting the function
+    std::lock_guard<std::mutex> lk{critical_region_mtx};
+    state[i] = State::THINKING;
+    test(left(i));
+    test(right(i));
 }
 
 void philosopher(size_t i)
 {
-    while (true) 
-    {                         // repeat forever
-        think(i);             // philosopher is State::THINKING
-        take_forks(i);        // acquire two forks or block
-        eat(i);               // yum-yum, spaghetti
-        put_forks(i);         // put both forks back on table and check if neighbors can eat
+    while (true)
+    {
+        think(i);
+        take_forks(i);
+        eat(i);
+        {
+        std::lock_guard<std::mutex> lk{output_mtx};
+        eatCounter[i]++;
+        for(auto i: eatCounter) {
+          std::cout << i << " ";
+        }
+        std::cout << std::endl;
+        }
+        put_forks(i);
     }
 }
 
