@@ -1,12 +1,30 @@
-
 import numpy as np
-from numpy.ma.core import identity
+
+matrix_2 = np.array([[1, 2, 3],
+                     [2, 5, 5],
+                     [3, 5, 6]])
+
+matrix_ = np.array([[1, 2, -4, 2],
+                    [-2, 5, 3, -1],
+                    [2, 1, -1, 2],
+                    [3, 1, -2, -1]])
+
+matrix_rs_2 = np.array([[1],
+                        [2],
+                        [3]])
+
+matrix_rs = np.array([[6],
+                      [2],
+                      [2],
+                      [3]])
 
 permutation_counter = 0
 
-x_marker = ["x1", "x2", "x3", "x4"]
+diagonal_elements = np.zeros(matrix_.shape[0])
 
-identity_matrix = np.eye(4)
+identity_matrix = np.eye(matrix_.shape[0])
+
+x_marker = ["x" + str(i+1) for i in range(matrix_.shape[0])]
 
 
 def diagonal_m(diagonal_element):
@@ -62,32 +80,50 @@ def inverse_iter(matrix, rs, x_vec):
     return result_dic
 
 
-matrix_ = np.array([[1, 2, -4, 2],
-                    [-2, 5, 3, -1],
-                    [2, 1, -1, 2],
-                    [3, 1, -2, -1]])
+def calc_determinant(permutation_counter, main_element):
+    det = 1
+    for i in range(main_element.shape[0]):
+        det *= main_element[i]
+    det *= -1 ** (permutation_counter)
+    return det
 
-matrix_rs = np.array([[6],
-                      [2],
-                      [2],
-                      [3]])
 
 for i in range(matrix_.shape[1]):
     print("Current iteration:", i)
 
+    # Finding column to be swapped and creating the P matrix
     swap_with = find_max_in_col(matrix_, i)
     permutation = permutation_matrix(matrix_.shape[1], swap_with, i)
 
     print("P", "\n", permutation, "\n")
+
+    # transforming
     matrix_ = np.matmul(matrix_, permutation)
 
+    # remember the main elements for determinant
+    diagonal_elements[i] = matrix_[i][i]
+
+    # creating M matrix
     m_matr = m_matrix(matrix_, i)
     print("M", "\n", np.round(m_matr, 2), "\n")
 
+    # nulling elemnts under working one
     matrix_ = np.matmul(m_matr, matrix_)
 
     print("Current equation:", "\n", np.round(matrix_, 2), "\n", x_marker, "\n")
+
+    # transforming the right side vector
     matrix_rs = np.matmul(m_matr, matrix_rs)
     print("right side", "\n", np.round(matrix_rs, 2), "\n")
 
-print(inverse_iter(matrix_, matrix_rs, x_marker))
+# printing results
+print(inverse_iter(matrix_, matrix_rs, x_marker), "\n")
+
+# displating number of permutations
+print("Matrix was transformed:", permutation_counter, "times.", "\n")
+
+# calculating determinant with remembered diagonal elements
+print("Determinant:", calc_determinant(permutation_counter, diagonal_elements))
+
+# obumovlenosti
+print("Conditional", np.linalg.norm(np.linalg.inv(matrix_)) * np.linalg.norm(matrix_), "\n")
