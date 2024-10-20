@@ -62,10 +62,10 @@ def m_matrix(matrix, working_row):
     return result
 
 
-def find_max_in_col(matrix, working_col):
+def find_max_in_row(matrix, working_row):
     row = np.zeros(matrix.shape[0])
-    for i in range(working_col, matrix.shape[0]):
-        row[i] = matrix[i][working_col]
+    for i in range(working_row, matrix.shape[0]):
+        row[i] = matrix[working_row][i]
     max_col_index = np.argmax(row)
     return max_col_index
 
