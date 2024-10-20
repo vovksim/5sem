@@ -87,7 +87,9 @@ int main() {
     double *pResult; // Result vector for matrix-vector multiplication
     // Sizes of initial matrix and vector
     double singleIterTime = 0.0;
-    std::ofstream file("serialStat.csv", std::ios::app);
+    std::ofstream file("stats.csv", std::ios::app);
+    file << "Serial multiplication" << std::endl;
+    file << "Size, Actual Duration, Theoretical Duration" << std::endl;
     for (auto size: MATRIX_SIZE_VECTOR) {
         int size_ = static_cast<const int>(size);
         ProcessInitialization(pMatrix, pVector, pResult, size_);
