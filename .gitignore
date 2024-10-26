@@ -10,3 +10,7 @@ MSS/lab1_data
 
 #IDE files
 .idea
+
+#Generated plots and stats files
+*.png
+*.csv
