@@ -87,9 +87,6 @@ int main() {
     double *pResult; // Result vector for matrix-vector multiplication
     // Sizes of initial matrix and vector
     double singleIterTime = 0.0;
-    std::ofstream file("stats.csv", std::ios::app);
-    file << "Serial multiplication" << std::endl;
-    file << "Size, Actual Duration, Theoretical Duration" << std::endl;
     for (auto size: MATRIX_SIZE_VECTOR) {
         int size_ = static_cast<const int>(size);
         ProcessInitialization(pMatrix, pVector, pResult, size_);
@@ -97,11 +94,9 @@ int main() {
         ResultCalculation(pMatrix, pVector, pResult, size_);
         time_t finish = clock();
         double duration = (finish - start) / static_cast<double>(CLOCKS_PER_SEC);
-        if (size == 5000) {
-            singleIterTime = duration / (size * (2 * size - 1));
-        }
-        file << size << "," << std::setprecision(10) << duration << "," << std::setprecision(10) <<
-                calcTheoreticalTime(singleIterTime, size) << std::endl;
+        // Printing the time spent by matrix-vector multiplication
+        printf("%f\n", duration);
+        // Computational process termination
         ProcessTermination(pMatrix, pVector, pResult);
     }
 }

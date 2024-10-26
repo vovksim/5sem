@@ -75,16 +75,4 @@ int main() {
         statistics.emplace_back(i, (endTime - startTime) / static_cast<double>(CLOCKS_PER_SEC),
                                 theoreticalSingleIterationTime * calcTotalIterationQuantity(i));
     }
-
-    //sort by matrix size
-    std::sort(statistics.begin(), statistics.end(), [](const iterationStat &a, const iterationStat &b) {
-        return std::get<0>(a) < std::get<0>(b);;
-    });
-
-    //write stat to file
-    std::ofstream stat("serialStat.csv", std::ios::app);
-    for (auto &statistic: statistics) {
-        stat << std::get<0>(statistic) << "," << std::get<1>(statistic) << "," << std::get<2>(statistic) << std::endl;
-    }
-    return 0;
 }
