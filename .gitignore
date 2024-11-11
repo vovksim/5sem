@@ -10,6 +10,7 @@ MSS/lab1_data
 
 #IDE files
 .idea
+__pycache__
 
 #Generated plots and stats files
 *.png
