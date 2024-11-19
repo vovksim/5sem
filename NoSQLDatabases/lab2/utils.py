@@ -1,6 +1,7 @@
 import random
 import string
 from random import randint
+
 import mysql.connector
 from faker import Faker
 
@@ -64,7 +65,7 @@ def generate_review_data(num_records):
 def generate_image_guide_data(num_records):
     """Generate random data for imageGuideList."""
     imageGuideList = [
-        (i, (i % (num_records / 4)) + 1, randint(1, 9))
+        (i, rand_foreign_key(i), randint(1, 9))
         for i in range(1, int(num_records / 2) + 1)
     ]
     return imageGuideList
@@ -224,10 +225,38 @@ class MariaDBCursor:
         self.cursor = connection.cursor()
 
 
+def generate_guide_list(num_records):
+    avaible_images = int(num_records / 2)
+    image_counter = 0
+    id_counter = 1
+    guideList = []
+    while image_counter < avaible_images:
+        image_list = []
+        images_in_guide = randint(1, 20)
+        if image_counter + images_in_guide > avaible_images:
+            images_in_guide = avaible_images - image_counter
+        for i in range(images_in_guide):
+            image_list.append({"path": data_generator.file_path(), "created_at": data_generator.date()})
+        image_counter += images_in_guide
+        guideList.append(
+            {"type": "guide", "id": id_counter, "title": data_generator.text(10),
+             "description": data_generator.text(80),
+             "images": image_list, "game_id": rand_foreign_key(
+                id_counter), "game_name": "TBD", "user_id": rand_foreign_key(id_counter)})
+        id_counter += 1
+    while id_counter < num_records + 1:
+        guideList.append(
+            {"type": "guide", "id": id_counter, "title": data_generator.text(10),
+             "description": data_generator.text(80), "game_id": rand_foreign_key(
+                id_counter), "game_name": "TBD", "user_id": rand_foreign_key(id_counter)})
+        id_counter += 1
+    return guideList
+
+
 def generate_nosql_data(num_records):
     screenshotList = []
     reviewList = []
-    guideList = []
+    guideList = generate_guide_list(num_records)
     for i in range(1, num_records + 1):
         reviewList.append(
             {"type": "review", "id": i, "title": data_generator.text(20), "review:": data_generator.text(80),
@@ -237,28 +266,11 @@ def generate_nosql_data(num_records):
                                    "image": {"path": data_generator.file_path(), "created_at": data_generator.date()},
                                    "description": data_generator.text(40), "game_id": rand_foreign_key(
                     i), "user_id": rand_foreign_key(i)})
-            guideList.append(
-                {"type": "guide", "id": i, "title": data_generator.text(10), "description": data_generator.text(80),
-                 "game_id": rand_foreign_key(
-                     i), "user_id": rand_foreign_key(i)})
-        else:
-            image_list = []
-            if i < num_records / 2 / 2:
-                for j in range(int((num_records / 2) / (num_records / 2 / 2))):
-                    image_list.append({"path": data_generator.file_path(), "created_at": data_generator.date()})
-            if len(image_list) != 0:
-                guideList.append(
-                    {"type": "guide", "id": i, "title": data_generator.text(10), "description": data_generator.text(80),
-                     "images": image_list, "game_id": rand_foreign_key(
-                        i), "game_name": "TBD", "user_id": rand_foreign_key(i)})
-            else:
-                guideList.append(
-                    {"type": "guide", "id": i, "title": data_generator.text(10), "description": data_generator.text(80),
-                     "game_id": rand_foreign_key(i), "game_name": "TBD", "user_id": rand_foreign_key(i)})
     return {"screenshotList": screenshotList, "reviewList": reviewList, "guideList": guideList}
 
 
-def insert_all_data_mongodb(collection, guideList, reviewList, screenshotList):
-    collection.insert_many(guideList)
-    collection.insert_many(reviewList)
-    collection.insert_many(screenshotList)
+def insert_all_data_mongodb(guideCollection, reviewCollection, screenshotCollection, guideList, reviewList,
+                            screenshotList):
+    guideCollection.insert_many(guideList)
+    reviewCollection.insert_many(reviewList)
+    screenshotCollection.insert_many(screenshotList)
